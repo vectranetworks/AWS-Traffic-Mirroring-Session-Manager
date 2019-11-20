@@ -54,23 +54,23 @@ The runtime script (session_mirror_tap) does the following:
     python setup.py install
 
 ### Configuring an AWS Account for Session Mirroring
-Before tapping can happen, Each VPC need to be configured for tapping, 
-and any instances that should be blacklisted need to be indicated.
+Before Session Mirroring can take place, each VPC must have a target configured, 
+and any instances that should not participate (Vectra Sensor/Brain) need to be blacklisted.
 This is done by applying tags to the AWS Account.
 
-1. Blacklist any Vectra appliance instance ids, as this would create a circular tap that eats up all bandwidth:
+1. Blacklist individual instances by instance id or comma separated list of instance ids:
 
 
     session_mirror_blacklist (Interactive)
 
-1. Configure which VPCs should be tapped:
+2. Configure the VPCs should participate in Session Mirroring:
 
 
     session_mirror_config_vpc (Interactive)
     
-### Installing the Session Mirrors (Network Taps)
-Run the tapping tool to tap all available interfaces. 
-Run this command again any time instances are added or removed from the network.
+### Install the Session Mirrors (Network Taps)
+Once configuration is done, the last command can be run unattended, and any time there is a change of EC2s on the network.
+This step adds the Session Mirrors and starts sending traffic to the targets.
 
 
     session_mirror_tap (Unattended)

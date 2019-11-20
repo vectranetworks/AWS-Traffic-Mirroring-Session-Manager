@@ -16,7 +16,7 @@ setup(
     description='Creates Traffic Mirroring sessions (network taps) for Nitro instances in AWS',
     author='Matt Land',
     author_email='mland@vectra.ai',
-    license='proprietary',
+    license='apache',
     packages=['aws_network_tap', 'aws_network_tap.models'],
     entry_points={
         'console_scripts': [
