@@ -10,6 +10,8 @@ class AWSTag:
     @staticmethod
     def to_dict(aws_tags: List[Dict]) -> Dict:
         response = {}
+        if not aws_tags:
+            return response
         for item in aws_tags:
             response[item['Key']] = item.get('Value', AWSTag.Delete)
         return response

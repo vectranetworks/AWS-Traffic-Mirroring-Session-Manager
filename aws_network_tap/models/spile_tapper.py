@@ -158,7 +158,7 @@ class SpileTapper(Ec2ApiClient):
             for garbo in page["Reservations"]:
                 for instance in garbo["Instances"]:
                     instance_id = instance["InstanceId"]
-                    tags = AWSTag.to_dict(instance["Tags"])
+                    tags = AWSTag.to_dict(instance.get(AWSTag.TAGS_KEY))
                     for interface in instance["NetworkInterfaces"]:
                         yield Spile(
                             ec2_client=self.ec2_client,

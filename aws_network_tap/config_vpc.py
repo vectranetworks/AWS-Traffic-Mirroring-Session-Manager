@@ -41,6 +41,7 @@ def find_mirror_target(region: str, vpc_id: str) -> Union[str, None]:
 
 
 def main() -> None:
+    logging.getLogger().setLevel(logging.INFO)
     region = Ec2ApiClient.get_region()
     for vpc_prop in Ec2ApiClient.list_vpcs(region=region):  # type: VPC_Props
         current_tap_state = bool(vpc_prop.tags.get(Ec2ApiClient.TAG_KEY_VPC_TAP))
@@ -57,5 +58,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
     main()

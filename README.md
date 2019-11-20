@@ -71,7 +71,7 @@ session_mirror_config_vpc (Interactive)
 ### Install the Session Mirrors (Network Taps)
 Once configuration is done, the last command can be run unattended, and any time there is a change of EC2s on the network.
 This step adds the Session Mirrors and starts sending traffic to the targets.
-```bash
+```console
 session_mirror_tap (Unattended)
 ```
 

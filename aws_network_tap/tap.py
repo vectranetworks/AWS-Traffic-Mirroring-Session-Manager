@@ -13,6 +13,7 @@ from aws_network_tap.models.spile_tapper import SpileTapper
 
 
 def main() -> None:
+    logging.getLogger().setLevel(logging.INFO)
     region = Ec2ApiClient.get_region()
     for vpc_prop in Ec2ApiClient.list_vpcs(region=region):  # type: VPC_Props
         logging.info(f" Managing Session Mirroring for VPC {vpc_prop.name}: {vpc_prop.vpc_id}")
@@ -25,5 +26,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.INFO)
     main()

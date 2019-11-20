@@ -21,6 +21,7 @@ def set_blacklist(region: str, enabled: bool = True) -> None:
 
 
 def main() -> None:
+    logging.getLogger().setLevel(logging.INFO)
     region = Ec2ApiClient.get_region()
     set_blacklist(region=region, enabled=True)
     blacklist = Ec2ApiClient.get_blacklist(region=region)
@@ -29,5 +30,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
     main()
