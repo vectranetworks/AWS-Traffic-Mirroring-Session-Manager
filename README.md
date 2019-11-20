@@ -44,14 +44,14 @@ The runtime script (session_mirror_tap) does the following:
 
 ### Installing
 1. Clone this repo
-    
-        
-    git clone git@github.com:vectranetworks/AWS-Session-Mirroring-Tool.git
+```console
+git clone git@github.com:vectranetworks/AWS-Session-Mirroring-Tool.git
+```        
         
 3. Install the commands
-
-    
-    python setup.py install
+```console
+python setup.py install
+```
 
 ### Configuring an AWS Account for Session Mirroring
 Before Session Mirroring can take place, each VPC must have a target configured, 
@@ -59,33 +59,33 @@ and any instances that should not participate (Vectra Sensor/Brain) need to be b
 This is done by applying tags to the AWS Account.
 
 1. Blacklist individual instances by instance id or comma separated list of instance ids:
-
-
-    session_mirror_blacklist (Interactive)
+```console
+session_mirror_blacklist (Interactive)
+```
 
 2. Configure the VPCs should participate in Session Mirroring:
-
-
-    session_mirror_config_vpc (Interactive)
+```console
+session_mirror_config_vpc (Interactive)
+```
     
 ### Install the Session Mirrors (Network Taps)
 Once configuration is done, the last command can be run unattended, and any time there is a change of EC2s on the network.
 This step adds the Session Mirrors and starts sending traffic to the targets.
+```bash
+session_mirror_tap (Unattended)
+```
 
-
-    session_mirror_tap (Unattended)
 
 ## Development
-
-    ./venv.sh
-    source .venv/bin/activate
-
-1. Setup Virtualenv
-   
+1. Set up the Virtualenv
+```console
+./venv.sh
+source .venv/bin/activate
+```   
 2. Set the blacklist to include the Cognito Brain and Sensor instance ids by editing aws_network_tap.spile_driver
 
 3. Run the tapper
-
-
-    cd ..
-    python -m aws_network_tap.spile_driver 
+```console
+cd ..
+python -m aws_network_tap.spile_driver 
+```
