@@ -1,6 +1,7 @@
 # AWS Session Mirroring Tool
 
-This tool automates the creation and maintenance AWS Session Mirrors (Network Taps) of Nitro based EC2 instances.
+This tool automates the creation and maintenance AWS Session Mirrors (Network Taps) of Nitro based EC2 instances. 
+Session Mirroring enables using the network to audit the behavior of deployed EC2 instances, by sending the traffic to network security products like Vectra Cognito Detect.
 
 | Notice: Usage of this tool can lead to significant AWS charges from the network taps created or the NLB data transfer charges. No warranty or recourse are provided. |
 | --- |
