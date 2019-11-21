@@ -1,5 +1,8 @@
 
 from typing import Union, Set, List
+from datetime import datetime, timedelta
+import time
+import logging
 import boto3  # type: ignore
 from aws_network_tap.models.ec2_api_client import VENDOR, Ec2ApiClient
 
@@ -47,4 +50,18 @@ class NlbFactory:
         response = self.client.create_load_balancer(
             Name=self.lb_name, Subnets=subnets, Scheme="internal", Type="network"
         )
-        return response["LoadBalancers"][0]["LoadBalancerArn"]
+        nlb_arn = response["LoadBalancers"][0]["LoadBalancerArn"]
+        logging.info(f'NLB created: {nlb_arn}')
+        # start waiting
+        start = datetime.utcnow()
+        while True:
+            try:
+                state = self.client.describe_load_balancers(LoadBalancerArns=[nlb_arn])['LoadBalancers'][0]['State']['Code']
+                if 'active' == state:
+                    return nlb_arn
+            except Exception:
+                logging.info('faied to get status')
+            time.sleep(10)
+            if datetime.utcnow() > start + timedelta(300):
+                raise Exception(f'NLB {nlb_arn} failed to become active within required time')
+            logging.info(f'NLB current state is `{state}`, waiting for `active`')

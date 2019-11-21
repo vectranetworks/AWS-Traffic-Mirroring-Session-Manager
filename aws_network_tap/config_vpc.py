@@ -12,31 +12,33 @@ from aws_network_tap.models.aws_tag import AWSTag
 
 
 def find_target(region: str, vpc_id: str) -> str:
-    make_nlb = 'y' in input("Create NLB (n) ? ").lower()
+    make_nlb = 'y' in input("Create new Network Load Balancer (n) ? ").lower()
     if not make_nlb:
         raise ValueError('A target is required')
     target_arn = NlbFactory(region=region, vpc_id=vpc_id).find_or_create()
-    logging.info("Created NLB")
+    logging.info(f"Created Network Load Balancer {target_arn}")
     return target_arn
 
 
 def find_mirror_target(region: str, vpc_id: str) -> Union[str, None]:
     """ return mirror target ARN """
     print("Choose a Mirror Target. Note: IP traffic must be routeable from the source ENI to the target.")
+
     for target in Ec2ApiClient.list_mirror_targets(region=region): # type: Mirror_Target_Props
         if target.vpc_bound and target.vpc_id != vpc_id:
             print(f'Warning: [{target.name}] is not recommended, unless transit gateway or vpc peering is in place.')
-        if 'y' in input(f'Use Existing Session Mirror Target [{target.name}] {target.target_id}? (y) ').lower() or 'y':
+
+        if 'y' in (input(f'Use existing Session Mirror Target [{target.name}] {target.target_id}? (n) ').lower() or 'n'):
             return target.target_id
 
-    make_nlb_target = 'y' in input("Create New Session Mirroring Target? (n) ").lower()
+    make_nlb_target = 'y' in input("Create new Session Mirroring Target? (n) ").lower()
     if not make_nlb_target:
         raise ValueError('A Mirror Target is required to continue')
     target_arn = find_target(region=region, vpc_id=vpc_id)
     d_target_id = NlbTargetFactory(region=region, vpc_ids=[vpc_id]).find_or_create(
         nlb_or_eni_arn=target_arn
     )
-    logging.info("Created Session Mirroring Target")
+    logging.info(f"Created Session Mirroring Target {d_target_id}")
     return d_target_id
 
 
@@ -54,7 +56,7 @@ def main() -> None:
         else:
             mirror_target_arn = find_mirror_target(region=region, vpc_id=vpc_prop.vpc_id)
         Ec2ApiClient.set_vpc_target(region=region, vpc_id=vpc_prop.vpc_id, session_mirror_target_arn=mirror_target_arn)
-        logging.info('config updated')
+        logging.info(f'VPC target updated to {mirror_target_arn}')
 
 
 if __name__ == '__main__':
