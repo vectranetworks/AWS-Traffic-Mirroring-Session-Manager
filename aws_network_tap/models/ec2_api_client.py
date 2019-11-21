@@ -92,7 +92,7 @@ class Ec2ApiClient:
                 ])["NetworkInterfaces"][0]["VpcId"]
                 vpc_bound = True
             if target['Type'] == cls.TARGET_NLB:
-                lb = boto3.client('elbv2', region=region).describe_load_balancers(
+                lb = boto3.client('elbv2', region_name=region).describe_load_balancers(
                     LoadBalancerArns=[
                         target['NetworkLoadBalancerArn']
                     ],
