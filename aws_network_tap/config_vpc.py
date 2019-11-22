@@ -61,7 +61,7 @@ def main() -> None:
     logging.getLogger().setLevel(logging.INFO)
     region = Ec2ApiClient.get_region()
     for vpc_prop in Ec2ApiClient.list_vpcs(region=region):  # type: VPC_Props
-        change_vpc_config(vpc_prop, region)
+        propmpt_vpc_config(vpc_prop, region)
 
 
 if __name__ == '__main__':
