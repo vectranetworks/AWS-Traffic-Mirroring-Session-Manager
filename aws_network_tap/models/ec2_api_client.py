@@ -1,6 +1,7 @@
 
 
 from collections import namedtuple
+import logging
 from typing import Iterable, List, Union, Dict
 import boto3  # type: ignore
 from ec2_metadata import ec2_metadata  # type: ignore
@@ -85,20 +86,26 @@ class Ec2ApiClient:
         for target in response:
             tags = AWSTag.to_dict(target.get(AWSTag.TAGS_KEY))
             # get the VPC_ID
-
             if target['Type'] == cls.TARGET_NIC:
                 vpc_id = cls._get_client(region=region).describe_network_interfaces(NetworkInterfaceIds=[
                         target['NetworkInterfaceId'],
                 ])["NetworkInterfaces"][0]["VpcId"]
                 vpc_bound = True
             if target['Type'] == cls.TARGET_NLB:
-                lb = boto3.client('elbv2', region_name=region).describe_load_balancers(
-                    LoadBalancerArns=[
-                        target['NetworkLoadBalancerArn']
-                    ],
-                )['LoadBalancers'][0]
+                try:
+                    lb = boto3.client('elbv2', region_name=region).describe_load_balancers(
+                        LoadBalancerArns=[
+                            target['NetworkLoadBalancerArn']
+                        ],
+                    )['LoadBalancers'][0]
+                except Exception as e:
+                    if 'or more load balancers not found' in str(e):
+                        id = target['TrafficMirrorTargetId']
+                        logging.warning(f'Invalid Session Mirroring Target {id}, delete manually.')
+                        continue
+                    raise
                 vpc_id = lb["VpcId"]
-                vpc_bound = True if lb["Schema"] == "internal" else False
+                vpc_bound = True if lb.get("Schema") == "internal" else False
             yield Mirror_Target_Props(
                 target['TrafficMirrorTargetId'],
                 tags.get(AWSTag.NAME_KEY),

@@ -76,10 +76,14 @@ class Spile:
                 ],
             )["TrafficMirrorSession"]
         except Exception as e:
-            if 'is in use by target' not in str(e):
-                raise
-            logging.warning(f'unable to tap {self.eni_tag.instance_id} due to existing tap')
-            return None
+            if 'is in use by target' in str(e):
+                logging.warning(f'unable to tap {self.eni_tag.instance_id} due to existing tap')
+                return None
+            if 'Sources per interface-target limit reached' in str(e):
+                logging.warning(f'unable to tap {self.eni_tag.instance_id} due to target limit')
+                return None
+            raise
+
         return MirrorSession(
             _["TrafficMirrorSessionId"],
             _["TrafficMirrorTargetId"],

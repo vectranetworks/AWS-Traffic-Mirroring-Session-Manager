@@ -1,5 +1,6 @@
 import logging
 from typing import Union
+from aws_network_tap.models.aws_tag import AWSTag
 from aws_network_tap.models.ec2_api_client import Ec2ApiClient, VENDOR
 
 
@@ -27,12 +28,19 @@ class NlbTargetFactory(Ec2ApiClient):
         return response[0]["TrafficMirrorTargetId"]
 
     def create(self, nlb_or_eni_arn: str) -> str:
-        # create the target (of the mirroring)\
-        kwargs = {"Description": VENDOR + "TrafficMirror"}
+        # create the target (of the mirroring)
+        kwargs = {
+            "Description": VENDOR + "TrafficMirror",
+            "TagSpecifications": [
+                {
+                    'ResourceType': 'traffic-mirror-target',
+                    'Tags': AWSTag.to_tags({AWSTag.NAME_KEY: VENDOR + 'NLBTarget'})
+                }
+            ],
+        }
         if "elasticloadbalancing" in nlb_or_eni_arn:
             kwargs["NetworkLoadBalancerArn"] = nlb_or_eni_arn
         else:
             kwargs["NetworkInterfaceId"] = nlb_or_eni_arn
-        logging.info(kwargs)
         response = self.ec2_client.create_traffic_mirror_target(**kwargs)
         return response["TrafficMirrorTarget"]["TrafficMirrorTargetId"]
