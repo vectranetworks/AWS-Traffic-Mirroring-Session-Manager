@@ -66,7 +66,7 @@ This is done by applying tags inside the AWS Account.
 session_mirror_blacklist (Interactive)
 ```
 
-2. Configure the VPCs should participate in Session Mirroring:
+2. Configure the VPCs which should participate in Session Mirroring:
 ```console
 session_mirror_config_vpc (Interactive)
 ```
