@@ -42,7 +42,7 @@ def find_mirror_target(region: str, vpc_id: str) -> Union[str, None]:
     return d_target_id
 
 
-def propmpt_vpc_config(vpc_prop: VPC_Props, region: str):
+def prompt_vpc_config(vpc_prop: VPC_Props, region: str):
     # if it currently has a certain tag, its tapped
     current_tap_state = bool(vpc_prop.tags.get(Ec2ApiClient.TAG_KEY_VPC_TAP))
     desc = 'enabled to ' + vpc_prop.tags.get(Ec2ApiClient.TAG_KEY_VPC_TAP) if current_tap_state else 'disabled'
@@ -61,7 +61,7 @@ def main() -> None:
     logging.getLogger().setLevel(logging.INFO)
     region = Ec2ApiClient.get_region()
     for vpc_prop in Ec2ApiClient.list_vpcs(region=region):  # type: VPC_Props
-        change_vpc_config(vpc_prop, region)
+        prompt_vpc_config(vpc_prop, region)
 
 
 if __name__ == '__main__':
