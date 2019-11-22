@@ -6,8 +6,8 @@ from typing import Iterable, List, Union, Dict
 import boto3  # type: ignore
 from ec2_metadata import ec2_metadata  # type: ignore
 from aws_network_tap.models.aws_tag import AWSTag
-
-VENDOR = "Vectra"
+from aws_network_tap.models.tag_config import VPCTagConfig, EC2Config
+from aws_network_tap.constants import VENDOR
 
 ENI_Tag = namedtuple("ENI_Tag", "instance_id interface_id tags state")
 VPC_Props = namedtuple("VPC_Props", "vpc_id name tags")
@@ -87,10 +87,16 @@ class Ec2ApiClient:
             tags = AWSTag.to_dict(target.get(AWSTag.TAGS_KEY))
             # get the VPC_ID
             if target['Type'] == cls.TARGET_NIC:
-                vpc_id = cls._get_client(region=region).describe_network_interfaces(NetworkInterfaceIds=[
-                        target['NetworkInterfaceId'],
-                ])["NetworkInterfaces"][0]["VpcId"]
-                vpc_bound = True
+                try:
+                    vpc_id = cls._get_client(region=region).describe_network_interfaces(NetworkInterfaceIds=[
+                            target['NetworkInterfaceId'],
+                    ])["NetworkInterfaces"][0]["VpcId"]
+                    vpc_bound = True
+                except Exception as e:
+                    if 'does not exist' in str(e):
+                        id = target['TrafficMirrorTargetId']
+                        logging.warning(f'Invalid Instance Session Mirroring Target `{id}`, delete manually.')
+                        continue
             if target['Type'] == cls.TARGET_NLB:
                 try:
                     lb = boto3.client('elbv2', region_name=region).describe_load_balancers(
@@ -101,7 +107,7 @@ class Ec2ApiClient:
                 except Exception as e:
                     if 'or more load balancers not found' in str(e):
                         id = target['TrafficMirrorTargetId']
-                        logging.warning(f'Invalid Session Mirroring Target {id}, delete manually.')
+                        logging.warning(f'Invalid NLB Session Mirroring Target `{id}`, delete manually.')
                         continue
                     raise
                 vpc_id = lb["VpcId"]
@@ -114,37 +120,48 @@ class Ec2ApiClient:
                 vpc_bound
             )
 
-    TAG_KEY_VPC_TAP = VENDOR + ':session_mirroring_target'
-
     @classmethod
-    def set_vpc_target(cls, region: str, vpc_id: str, session_mirror_target_arn: Union[str, None]) -> None:
+    def set_vpc_config(cls, region: str, vpc_id: str, config: VPCTagConfig) -> None:
         """ enables/disables tapping the vpc"""
         client = cls._get_client(region=region)
-        tags = AWSTag.to_tags({cls.TAG_KEY_VPC_TAP: session_mirror_target_arn})
-        if session_mirror_target_arn:
-            client.create_tags(Tags=tags, Resources=[vpc_id])
+        if config.enabled:
+            client.create_tags(Tags=config.get_aws_tags(), Resources=[vpc_id])
         else:
-            client.delete_tags(Tags=tags, Resources=[vpc_id])
-
-    TAG_KEY_INSTANCE_BLACKLIST = VENDOR + ':session_mirroring_blacklist'
+            client.delete_tags(Tags=config.get_aws_tags(), Resources=[vpc_id])
 
     @classmethod
     def blacklist_instance(cls, region: str, instance_id: str, enabled: bool) -> None:
         """ enables/disables instances being blacklisted from tapping """
         client = cls._get_client(region=region)
-        tags = AWSTag.to_tags({cls.TAG_KEY_INSTANCE_BLACKLIST: 'True' if enabled else AWSTag.Delete})
-        if enabled:
-            client.create_tags(Tags=tags, Resources=[instance_id])
+        config = EC2Config()
+        config.blacklist = enabled
+        if config.blacklist:
+            client.create_tags(Tags=config.get_aws_tags(), Resources=[instance_id])
         else:
-            client.delete_tags(Tags=tags, Resources=[instance_id])
+            client.delete_tags(Tags=config.get_aws_tags(), Resources=[instance_id])
 
     @classmethod
-    def get_blacklist(cls, region: str) -> List[str]:
+    def whitelist_instance(cls, region: str, instance_id: str, enabled: bool) -> None:
+        """ enables/disables instances being whitelisted to tapping """
+        client = cls._get_client(region=region)
+        config = EC2Config()
+        config.whitelist = enabled
+        if config.whitelist:
+            client.create_tags(Tags=config.get_aws_tags(), Resources=[instance_id])
+        else:
+            client.delete_tags(Tags=config.get_aws_tags(), Resources=[instance_id])
+
+    @classmethod
+    def get_instances_by_tag(cls, region: str, tag: str) -> List[str]:
+        """ Tag should be EC2Config.T_WHITELIST or T_BLACKLIST """
+        # TODO paginate this
+        if tag not in EC2Config.TAGS:
+            raise ValueError('only specific tags are supported')
         response = cls._get_client(region=region).describe_tags(Filters=[
             {
-                'Name': 'tag:' + cls.TAG_KEY_INSTANCE_BLACKLIST,
+                'Name': 'tag:' + tag,
                 'Values': [
-                    'True',
+                    EC2Config.V_TRUE,
                 ]
             },
         ])['Tags']
