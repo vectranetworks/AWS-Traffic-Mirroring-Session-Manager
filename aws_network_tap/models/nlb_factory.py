@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import time
 import logging
 import boto3  # type: ignore
-from aws_network_tap.models.ec2_api_client import VENDOR, Ec2ApiClient
+from aws_network_tap.models.ec2_api_client import VENDOR, Ec2ApiClient, Subnet_Props
 
 
 class NlbFactory:
@@ -41,12 +41,9 @@ class NlbFactory:
         return response[0]["LoadBalancerArn"]
 
     def create_nlb(self) -> str:
-        seen_azs = set()  # type: Set[str]
         subnets = []  # type: List[str]
-        for subnet in Ec2ApiClient(region=self.region, vpc_ids=[self.vpc_id]).list_subnets():
-            if subnet.az not in seen_azs:
-                seen_azs.add(subnet.az)
-                subnets.append(subnet.subnet_id)
+        for subnet in Ec2ApiClient(region=self.region, vpc_ids=[self.vpc_id]).list_subnets():  # type: Subnet_Props
+            subnets.append(subnet.subnet_id)
         response = self.client.create_load_balancer(
             Name=self.lb_name, Subnets=subnets, Scheme="internal", Type="network"
         )

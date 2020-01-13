@@ -11,7 +11,7 @@ VENDOR = "Vectra"
 
 ENI_Tag = namedtuple("ENI_Tag", "instance_id interface_id tags state")
 VPC_Props = namedtuple("VPC_Props", "vpc_id name tags")
-Subnet_Props = namedtuple("Subnet_Props", "subnet_id name arn az")
+Subnet_Props = namedtuple("Subnet_Props", "subnet_id name arn az zone_id")
 Mirror_Target_Props = namedtuple("Mirror_Target_Props", "target_id name type vpc_id vpc_bound")
 
 
@@ -75,7 +75,7 @@ class Ec2ApiClient:
         for subnet in subnets["Subnets"]:
             tags = AWSTag.to_dict(subnet.get(AWSTag.TAGS_KEY))
             yield Subnet_Props(
-                subnet["SubnetId"], tags.get(AWSTag.NAME_KEY), subnet["SubnetArn"], subnet["AvailabilityZoneId"]
+                subnet["SubnetId"], tags.get(AWSTag.NAME_KEY), subnet["SubnetArn"], subnet["AvailabilityZone"], subnet["AvailabilityZoneId"]
             )
     TARGET_NIC = "network-interface"
     TARGET_NLB = 'network-load-balancer'
