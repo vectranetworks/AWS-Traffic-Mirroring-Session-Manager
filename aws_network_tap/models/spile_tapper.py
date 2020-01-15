@@ -3,6 +3,7 @@ from typing import Generator, List
 from aws_network_tap.models.ec2_api_client import Ec2ApiClient, ENI_Tag
 from aws_network_tap.models.spile import Spile
 from aws_network_tap.models.aws_tag import AWSTag
+from aws_network_tap.models.tag_config import EC2Config, VPCTagConfig
 
 
 class SpileTapper(Ec2ApiClient):
@@ -171,13 +172,19 @@ class SpileTapper(Ec2ApiClient):
                         )
 
     @classmethod
-    def manage(cls, region: str, vpc_ids: List[str], target_id: str, blacklist: List[str] = None) -> None:
+    def manage(cls, region: str, vpc_ids: List[str], config: VPCTagConfig) -> None:
         tapper = SpileTapper(region=region, vpc_ids=vpc_ids)
-        ec2_blacklist = Ec2ApiClient.get_blacklist(region=region)
+        if not config.enabled:
+            return
+        ec2_blacklist = []
+        ec2_whitelist = []
+        if config.auto_enrollment:
+            ec2_blacklist = Ec2ApiClient.get_instances_by_tag(region=region, tag=EC2Config.T_BLACKLIST)
+        else:
+            ec2_whitelist = Ec2ApiClient.get_instances_by_tag(region=region, tag=EC2Config.T_WHITELIST)
         for spile in tapper.discover():  # type: Spile
-            do_tap = bool(target_id)
-            if blacklist and spile.eni_tag.instance_id in blacklist:
-                do_tap = False
-            if spile.eni_tag.instance_id in ec2_blacklist:
-                do_tap = False
-            spile.manage(target_id=target_id, do_tap=do_tap)
+            if config.auto_enrollment:
+                do_tap = spile.eni_tag.instance_id not in ec2_blacklist
+            else:
+                do_tap = spile.eni_tag.instance_id in ec2_whitelist
+            spile.manage(target_id=config.target, do_tap=do_tap)
