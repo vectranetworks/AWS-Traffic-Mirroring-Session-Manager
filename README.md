@@ -1,6 +1,6 @@
 # AWS VPC Traffic Mirroring Session Manager
 
-This tool automates the creation and maintenance VPC Traffic Mirroring Sessions (Individual Network Taps) of Nitro based EC2 instances. 
+This tool automates the creation and maintenance of VPC Traffic Mirroring Sessions (Individual Network Taps) of Nitro based EC2 instances.
 Traffic Mirroring enables use of the network to audit the behavior of deployed EC2 instances, 
 by sending a copy of all traffic to a network security product like Vectra Cognito Detect.
 
@@ -17,7 +17,7 @@ The tool can selectively tap any VPCs in one AWS account, as well as tap each EN
 
 Enrollment Mode: This setting is configured at the VPC level using the vpc_config tool. The default mode is Auto.
 
-- Auto Enrollment: All discovered running instances will be tapped, except for those which are blacklisted.
+- Auto Enrollment (with blacklisting): All discovered running instances will be tapped, except for those which are blacklisted.
 - Whitelist Enrollment: No instances are tapped, except those which are whitelisted. (Blacklist does not apply). 
 
 
@@ -26,7 +26,7 @@ AWS VPC Traffic Mirroring Architecture
 ![TrafficMirror Architecture!](docs/AWS_SessionMirror_Architecture.png)
 
 
-This configuration scripts (session_mirror_blacklist, session_mirror_whitelist, session_mirror_config_vpc) do the following:
+These configuration scripts (session_mirror_blacklist, session_mirror_whitelist, session_mirror_config_vpc) do the following:
 
 1. For each VPC that should be monitored, denote a Traffic Mirroring Target and an instance Enrollment Mode by applying AWS Tags to the VPC 
 1. [Optional] Create an AWS NLB (network load balancer) to be the target of Mirroring Sessions 

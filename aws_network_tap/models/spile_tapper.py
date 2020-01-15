@@ -176,7 +176,8 @@ class SpileTapper(Ec2ApiClient):
         tapper = SpileTapper(region=region, vpc_ids=vpc_ids)
         if not config.enabled:
             return
-        ec2_blacklist = ec2_whitelist = []
+        ec2_blacklist = []
+        ec2_whitelist = []
         if config.auto_enrollment:
             ec2_blacklist = Ec2ApiClient.get_instances_by_tag(region=region, tag=EC2Config.T_BLACKLIST)
         else:

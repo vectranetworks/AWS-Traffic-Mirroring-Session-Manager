@@ -47,7 +47,7 @@ def prompt_vpc_config(vpc_prop: VPC_Props, region: str) -> None:
     The VPC configuration is stored in the account using tags, per the properties supported in VPCTagConfig
     """
     current_config = VPCTagConfig(vpc_prop.tags)
-    desc = 'enabled to `{}` with enrollment mode `{}`'.format(current_config.target, current_config.enrollment) if current_config.enabled else 'disabled'
+    desc = f'enabled to `{current_config.target}` with enrollment mode `{current_config.enrollment}`' if current_config.enabled else 'disabled'
     change_config = 'y' in input(f'Modify VPC config for {vpc_prop.vpc_id}:{vpc_prop.name} (currently {desc})? (n) ').lower()
     if not change_config:
         return
