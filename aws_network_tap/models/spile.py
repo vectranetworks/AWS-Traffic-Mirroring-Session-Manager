@@ -101,9 +101,6 @@ class Spile:
             if not self.should_manage(mirror_session):
                 logging.info(f'Ignoring externally managed session {mirror_session.id}')
                 return None  # don't manage this one
-            #if self.eni_tag.state != Ec2ApiClient.STATE_RUNNING:
-            #    self._untap(mirror_session.id)  # remove
-            #    return None
             if not do_tap:
                 self._untap(mirror_session.id)
                 return None
