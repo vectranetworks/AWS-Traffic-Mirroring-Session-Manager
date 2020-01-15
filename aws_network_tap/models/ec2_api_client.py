@@ -19,6 +19,7 @@ class Ec2ApiClient:
     cache = {}  # type: Dict[str, boto3.client]
 
     STATE_RUNNING = "running"
+    STATE_STOPPED = 'stopped'
 
     def __init__(self, account_number: str = None, region: str = None, vpc_ids: List[str] = None):
         if not account_number:
