@@ -4,6 +4,7 @@ No actual instance tapping happens until spile_driver is called
 """
 
 import logging
+import os
 from typing import Union
 from aws_network_tap.models.ec2_api_client import Ec2ApiClient, VPC_Props, Mirror_Target_Props
 from aws_network_tap.models.nlb_factory import NlbFactory
@@ -71,7 +72,8 @@ def prompt_vpc_config(vpc_prop: VPC_Props, region: str) -> None:
 
 
 def main() -> None:
-    logging.getLogger().setLevel(logging.INFO)
+    log_level = os.getenv('LOG_LEVEL', 'INFO')
+    logging.getLogger().setLevel(log_level)
     region = Ec2ApiClient.get_region()
     for vpc_prop in Ec2ApiClient.list_vpcs(region=region):  # type: VPC_Props
         prompt_vpc_config(vpc_prop, region)

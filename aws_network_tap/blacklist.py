@@ -4,6 +4,7 @@ Sensors and Brains should not be tapped.
 """
 
 import logging
+import os
 from aws_network_tap.models.ec2_api_client import Ec2ApiClient
 from aws_network_tap.models.tag_config import EC2Config
 
@@ -22,7 +23,8 @@ def set_blacklist(region: str, enabled: bool = True) -> None:
 
 
 def main() -> None:
-    logging.getLogger().setLevel(logging.INFO)
+    log_level = os.getenv('LOG_LEVEL', 'INFO')
+    logging.getLogger().setLevel(log_level)
     region = Ec2ApiClient.get_region()
     set_blacklist(region=region, enabled=True)
     blacklist = Ec2ApiClient.get_instances_by_tag(region=region, tag=EC2Config.T_BLACKLIST)

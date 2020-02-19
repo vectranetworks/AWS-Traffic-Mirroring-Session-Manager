@@ -2,7 +2,10 @@ from unittest import TestCase
 from aws_network_tap.models.aws_tag import AWSTag
 from aws_network_tap.models.tag_config import VPCTagConfig, EC2Config, TagConfig
 import logging
-logging.getLogger().setLevel(logging.INFO)
+import os
+
+log_level = os.getenv('LOG_LEVEL', 'INFO')
+logging.getLogger().setLevel(log_level)
 
 
 class TestTagConfig(TestCase):
